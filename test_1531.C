@@ -48,22 +48,7 @@ class Solution {
                             if (cur == -1) {
                                continue;
                             }
-
-                            // last char of string s
-                            /*
-                            if (i == len-1) {
-                                if (j == k) {
-                                    ret = ret > cur ? cur : ret;
-                                }
-                                continue;
-                            }
-                            */
-                            /*
-                            if (cnt == len) {
-                                continue;
-                            }
-                            */
-
+                            // update lens[i+1][j+1]
                             if (j < k) {// notice, no over array range
                                 if (lens[i+1][j+1][m][cnt] == -1) {
                                     lens[i+1][j+1][m][cnt] = cur;
@@ -73,6 +58,7 @@ class Solution {
                                     }
                                 }
                             }
+                            // update lens[i+1][j]
                             if (m != s[i+1]-'a') {
                                 if (lens[i+1][j][s[i+1]-'a'][1] == -1) {
                                     lens[i+1][j][s[i+1]-'a'][1] = cur + 1;
