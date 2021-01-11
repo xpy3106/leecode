@@ -16,6 +16,8 @@
 
 using namespace std;
 
+bool flag = true;
+
 class Solution {
   public:
     int getLengthOfOptimalCompression(string s, int k) {
@@ -23,7 +25,7 @@ class Solution {
             if (k >= len) {
                 return 0;
             }
-
+            // init lens
             int lens[len][k+1][26][len+1];
             for (int i=0; i<len; i++) {
                 for (int j=0; j<k+1; j++) {
@@ -32,6 +34,9 @@ class Solution {
                             if (i == 0 && j == 0 && m == s[i]-'a' && n == 1) {
                                 // lens[0][0][s[0]-'a'][1] = 1
                                 lens[i][j][m][n] = 1;
+                            } else if (i+1 == j && m == s[i]-'a' && n == 0) {
+                                // lens[i][j+1][s[0-'a'][0] = 0
+                                lens[i][j][m][n] = 0;
                             } else {
                                 lens[i][j][m][n] = -1;
                             }
@@ -41,42 +46,54 @@ class Solution {
             }
 
             for (int i=0; i<len-1; i++) {
-                for (int j=0; j<k+1 && j<=i+1; j++) {
+                int maxj = k > i+1 ? i+2 : k+1;
+                for (int j=0; j<maxj; j++) {
                     for (int m=0; m<26; m++) {
-                        for (int cnt=0; cnt<=i+1; cnt++) {
+                        for (int cnt=0; cnt<len+1; cnt++) {
                             int cur = lens[i][j][m][cnt];
                             if (cur == -1) {
                                continue;
                             }
-                            // update lens[i+1][j+1]
-                            if (j < k) {// notice, no over array range
-                                if (lens[i+1][j+1][m][cnt] == -1) {
-                                    lens[i+1][j+1][m][cnt] = cur;
-                                } else {
-                                    if (lens[i+1][j+1][m][cnt] > cur) {
-                                        lens[i+1][j+1][m][cnt] = cur;
-                                    }
-                                }
+                            if (cnt == len+1) {
+                              continue;
                             }
-                            // update lens[i+1][j]
-                            if (m != s[i+1]-'a') {
-                                if (lens[i+1][j][s[i+1]-'a'][1] == -1) {
-                                    lens[i+1][j][s[i+1]-'a'][1] = cur + 1;
-                                } else {
-                                    if (lens[i+1][j][s[i+1]-'a'][1] > cur + 1) {
-                                        lens[i+1][j][s[i+1]-'a'][1] = cur + 1;
+                            
+                            if (cur == 0) {
+                               lens[i+1][j][s[i+1]-'a'][1] = 1;
+                            } else {
+                                // update lens[i+1][j+1]
+                                if (j < maxj-1) {// notice, no over array range
+                                    if (lens[i+1][j+1][m][cnt] == -1) {
+                                        lens[i+1][j+1][m][cnt] = cur;
+                                    } else {
+                                        if (lens[i+1][j+1][m][cnt] > cur) {
+                                            lens[i+1][j+1][m][cnt] = cur;
+                                        }
                                     }
                                 }
-                            } else {
-                                int add = 0;
-                                if (cnt == 1 || cnt == 9 || cnt == 99) {
-                                    add++;
-                                }
-                                if (lens[i+1][j][s[i+1]-'a'][cnt+1] == -1) {
-                                    lens[i+1][j][s[i+1]-'a'][cnt+1] = cur + add;
+                                // update lens[i+1][j]
+                                if (m != s[i+1]-'a') {
+                                    if (lens[i+1][j][s[i+1]-'a'][1] == -1) {
+                                        lens[i+1][j][s[i+1]-'a'][1] = cur + 1;
+                                    } else {
+                                        if (lens[i+1][j][s[i+1]-'a'][1] > cur + 1) {
+                                            lens[i+1][j][s[i+1]-'a'][1] = cur + 1;
+                                        }
+                                    }
                                 } else {
-                                    if (lens[i+1][j][s[i+1]-'a'][cnt+1] > cur + add) {
+                                    int add = 0;
+                                    // --a --aa: -a =>-a2
+                                    // --aaaaaaaaa --aaaaaaaaa: -a9 => -a10
+                                    // --aaa...aaa (99 repteaed a) --aaa...aaaa: -a99=> -a100
+                                    if (cnt == 1 || cnt == 9 || cnt == 99) {
+                                        add++;
+                                    }
+                                    if (lens[i+1][j][s[i+1]-'a'][cnt+1] == -1) {
                                         lens[i+1][j][s[i+1]-'a'][cnt+1] = cur + add;
+                                    } else {
+                                        if (lens[i+1][j][s[i+1]-'a'][cnt+1] > cur + add) {
+                                            lens[i+1][j][s[i+1]-'a'][cnt+1] = cur + add;
+                                        }
                                     }
                                 }
                             }
